@@ -575,7 +575,7 @@ main(int argc, char *argv[]) {
     }
   }
 
-  if (argUrl == NULL || argOut == NULL || argHelp) {
+  if ((argUrl == NULL && argIn == NULL) || argOut == NULL || argHelp) {
       CaptHelp();
       return EXIT_FAILURE;
   }
@@ -587,6 +587,7 @@ main(int argc, char *argv[]) {
   QString scriptProp(argScriptObject);
   QString scriptCode;
   QString htmlContent;
+  QByteArray htmlContentBa;
 
   if (argInjectScript) {
     QFile file(argInjectScript);
@@ -606,6 +607,7 @@ main(int argc, char *argv[]) {
       stream.setCodec(QTextCodec::codecForName("UTF-8"));
       stream.setAutoDetectUnicode(true);
       htmlContent = stream.readAll();
+      htmlContentBa = htmlContent.toUtf8();
       file.close();
     }
   }
@@ -665,8 +667,10 @@ main(int argc, char *argv[]) {
     SLOT(JavaScriptWindowObjectCleared()));
 #endif
 
-  if (!htmlContent.isNull()){
-    page.mainFrame()->setHtml(htmlContent,QUrl::fromEncoded(argUrl));
+//  if (!htmlContent.isNull()){
+//    page.mainFrame()->setHtml(htmlContent,QUrl::fromEncoded(argUrl));
+  if (!htmlContentBa.isNull()){
+    page.mainFrame()->setContent(htmlContentBa,QString("text/html"),QUrl::fromEncoded(argUrl));
   }else{
      if (!body.isNull())
         page.mainFrame()->load(req, method, body);

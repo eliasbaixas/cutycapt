@@ -1,7 +1,7 @@
 QT       +=  webkit svg network
 SOURCES   =  CutyCapt.cpp
 HEADERS   =  CutyCapt.hpp
-CONFIG   +=  qt console
+CONFIG   +=  qt console debugger
 
 contains(CONFIG, static): {
   QTPLUGIN += qjpeg qgif qsvg qmng qico qtiff
