@@ -40,7 +40,11 @@ public:
            int delay,
            OutputFormat format,
            const QString& scriptProp,
-           const QString& scriptCode);
+           const QString& scriptCode,
+           int orientation,
+           int pageSize,
+           double margin
+           );
 
 private slots:
   void DocumentComplete(bool ok);
@@ -54,6 +58,9 @@ private:
   void saveSnapshot();
   bool mSawInitialLayout;
   bool mSawDocumentComplete;
+  int          mOrientation;
+  int          mPageSize;
+  double       mMargins;
 
 protected:
   QString      mOutput;

@@ -149,7 +149,11 @@ CutyPage::setAttribute(QWebSettings::WebAttribute option,
 // TODO: Consider merging some of main() and CutyCap
 
 CutyCapt::CutyCapt(CutyPage* page, const QString& output, int delay, OutputFormat format,
-                   const QString& scriptProp, const QString& scriptCode) {
+                   const QString& scriptProp, const QString& scriptCode, int orientation, int pageSize, double margin) {
+
+  mOrientation = orientation;
+  mPageSize = pageSize;
+  mMargins = margin;
   mPage = page;
   mOutput = output;
   mDelay = delay;
@@ -259,7 +263,12 @@ CutyCapt::saveSnapshot() {
     case PdfFormat:
     case PsFormat: {
       QPrinter printer;
-      printer.setPageSize(QPrinter::A4);
+//    printer.setPageSize(QPrinter::A4);
+      printer.setPageSize(QPrinter::PageSize(mPageSize));
+      if(mMargins != 0) {
+          printer.setPageMargins(mMargins,mMargins,mMargins,mMargins,QPrinter::Inch);
+      }
+      printer.setOrientation(QPrinter::Orientation(mOrientation));
       printer.setOutputFileName(mOutput);
       // TODO: change quality here?
       mainFrame->print(&printer);
@@ -322,6 +331,9 @@ CaptHelp(void) {
     "  --auto-load-images=<on|off>    Automatic image loading (default: on)        \n"
     "  --js-can-open-windows=<on|off> Script can open windows? (default: unknown)  \n"
     "  --js-can-access-clipboard=<on|off> Script clipboard privs (default: unknown)\n"
+    "  --orientation=<int>            Page orientation (default: 0[Portrait])      \n"
+    "  --page-size=<int>              Paper size (default: 2[Letter])              \n"
+    "  --margins=<float>              Set page margin size (in inches)             \n"
 #if QT_VERSION >= 0x040500
     "  --print-backgrounds=<on|off>   Backgrounds in PDF/PS output (default: off)  \n"
     "  --zoom-factor=<float>          Page zoom factor (default: no zooming)       \n"
@@ -362,6 +374,10 @@ main(int argc, char *argv[]) {
   int argMinHeight = 600;
   int argMaxWait = 90000;
   int argVerbosity = 0;
+
+  int orientation = 0;
+  int pageSize = 2;
+  double margins = 0;
   
   const char* argUrl = NULL;
   const char* argUserStyle = NULL;
@@ -568,7 +584,13 @@ main(int argc, char *argv[]) {
         method = QNetworkAccessManager::HeadOperation;
       else 
         (void)0; // TODO: ...
-
+    } else if (strncmp("--orientation", s, nlen) == 0) {
+        orientation = (unsigned int)atoi(value);
+    } else if (strncmp("--page-size", s, nlen) == 0) {
+        pageSize = (unsigned int)atoi(value);
+    } else if (strncmp("--margins", s, nlen) == 0) {
+        margins = atof(value);
+        //printf("%f", margins);
     } else {
       // TODO: error
       argHelp = 1;
@@ -613,7 +635,7 @@ main(int argc, char *argv[]) {
   }
 
 
-  CutyCapt main(&page, argOut, argDelay, format, scriptProp, scriptCode);
+  CutyCapt main(&page, argOut, argDelay, format, scriptProp, scriptCode, orientation, pageSize, margins);
 
   app.connect(&page,
     SIGNAL(loadFinished(bool)),
